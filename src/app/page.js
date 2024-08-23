@@ -1,11 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [task, setTask] = useState([]);
+  const initialTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  const [task, setTask] = useState(initialTasks);
   const [heading, setHeading] = useState("");
   const [desc, setDesc] = useState("");
   const [editTask, setEditTask] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(task));
+  }, [task]);
 
   const handleHeading = (e) => {
     setHeading(e.target.value);
@@ -23,8 +28,8 @@ export default function Home() {
     }
 
     if (editTask !== null) {
-      const updatedTasks = task.map((task) =>
-        task.id === editTask ? { ...task, heading, desc } : task
+      const updatedTasks = task.map((taskItem) =>
+        taskItem.id === editTask ? { ...taskItem, heading, desc } : taskItem
       );
       setTask(updatedTasks);
     } else {
@@ -36,7 +41,7 @@ export default function Home() {
   };
 
   const handleDelete = (taskId) => {
-    setTask(task.filter((task) => task.id !== taskId));
+    setTask(task.filter((taskItem) => taskItem.id !== taskId));
   };
 
   const handleEdit = (taskId) => {
@@ -45,7 +50,7 @@ export default function Home() {
       setDesc("");
       setEditTask(null);
     } else {
-      const tasktoEdit = task.find((task) => task.id === taskId);
+      const tasktoEdit = task.find((taskItem) => taskItem.id === taskId);
       setHeading(tasktoEdit.heading);
       setDesc(tasktoEdit.desc);
       setEditTask(taskId);
@@ -56,7 +61,7 @@ export default function Home() {
     <>
       <div className="min-h-screen bg-lightSkyBlue flex items-center justify-center relative">
         <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-lg">
+          <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl p-10 my-10 bg-white shadow-2xl rounded-lg mx-4 lg:mx-6 xl:mx-10">
             <h1 className="text-2xl font-bold mb-4 text-center">TO-DO</h1>
 
             <form onSubmit={handleSubmit}>
@@ -82,31 +87,34 @@ export default function Home() {
               </button>
             </form>
 
-            <ul className="list-none p-0 mt-4">
+            <ul
+              className="list-none p-0 mt-4 overflow-auto max-h-[300px]"
+              style={{ maxHeight: "300px" }}
+            >
               {task.length === 0 ? (
                 <h3 className="text-gray-400">No Tasks Available</h3>
               ) : (
-                task.map((task) => (
+                task.map((taskItem) => (
                   <li
-                    key={task.id}
-                    className="my-2 bg-white shadow rounded-lg p-4 transition-transform duration-200 ease-in-out hover:-translate-x-1"
+                    key={taskItem.id}
+                    className="my-2 bg-grey shadow-lg rounded-lg p-4 transition-transform duration-200 ease-in-out hover:-translate-x-1"
                   >
                     <h2 className="font-semibold text-lg mb-2">
-                      {task.heading}
+                      {taskItem.heading}
                     </h2>
-                    <p>{task.desc}</p>
+                    <p>{taskItem.desc}</p>
                     <div className="flex justify-end space-x-2 mt-2">
                       <button
-                        onClick={() => handleDelete(task.id)}
+                        onClick={() => handleDelete(taskItem.id)}
                         className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
                       >
                         Delete
                       </button>
                       <button
-                        onClick={() => handleEdit(task.id)}
+                        onClick={() => handleEdit(taskItem.id)}
                         className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded ml-2"
                       >
-                        {editTask === task.id ? "Cancel Edit" : "Edit"}
+                        {editTask === taskItem.id ? "Cancel Edit" : "Edit"}
                       </button>
                     </div>
                   </li>
